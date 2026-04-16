@@ -69,6 +69,9 @@ import { WAHAHealthCheckServiceCore } from './health/WAHAHealthCheckServiceCore'
 import { SessionManagerCore } from './manager.core';
 import { BanProtectionService } from './services/BanProtectionService';
 
+const REDIS_URL = process.env.REDIS_URL;
+const SHOULD_ENABLE_QUEUE = !!REDIS_URL;
+
 export const IMPORTS_CORE = [
   ...AppsModuleExports.imports,
   LoggerModule.forRoot({
@@ -127,9 +130,13 @@ export const IMPORTS_CORE = [
   }),
   PassportModule,
   TerminusModule,
-  BullModule.registerQueue({
-    name: OUTGOING_MESSAGE_QUEUE,
-  }),
+  ...(SHOULD_ENABLE_QUEUE
+    ? [
+        BullModule.registerQueue({
+          name: OUTGOING_MESSAGE_QUEUE,
+        }),
+      ]
+    : []),
 ];
 
 const IMPORTS_MEDIA = [
@@ -203,8 +210,7 @@ const PROVIDERS = [
     useClass: WAHAHealthCheckServiceCore,
   },
   BanProtectionService,
-  MessageQueueService,
-  MessageQueueProcessor,
+  ...(SHOULD_ENABLE_QUEUE ? [MessageQueueService, MessageQueueProcessor] : []),
   ChannelsInfoServiceCore,
   ...PROVIDERS_BASE,
 ];

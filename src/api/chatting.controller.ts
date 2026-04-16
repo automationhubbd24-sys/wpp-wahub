@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Optional,
   Post,
   Put,
   Query,
@@ -60,7 +61,7 @@ export class ChattingController {
   constructor(
     private manager: SessionManager,
     private banProtection: BanProtectionService,
-    private messageQueue: MessageQueueService,
+    @Optional() private messageQueue: MessageQueueService,
   ) {}
 
   @Post('/sendText')
@@ -111,6 +112,11 @@ export class ChattingController {
     description: 'Enqueues the message to be sent with human-like delays and pacing to avoid bans.'
   })
   async sendTextQueued(@Body() request: MessageTextRequest): Promise<any> {
+    if (!this.messageQueue) {
+      throw new UnprocessableEntityException(
+        'Smart Queue is not enabled. Please configure REDIS_URL to use this feature.',
+      );
+    }
     // We don't need to check session here, the worker will do it
     return this.messageQueue.enqueue(request);
   }

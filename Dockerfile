@@ -20,7 +20,9 @@ RUN npm install -g corepack && corepack enable
 RUN yarn set version 4.9.2
 
 # Force GitHub SSH URLs to HTTPS so public forks can be cloned without SSH keys
-RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
+    git config --global url."https://github.com/".insteadOf "git+ssh://git@github.com/" && \
+    git config --global url."https://github.com/".insteadOf "git@github.com:"
 
 
 # App
